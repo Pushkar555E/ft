@@ -1,0 +1,21 @@
+// firestore.rules
+// Deploy with: firebase deploy --only firestore:rules
+//
+// For a personal finance app (single user), we allow open read/write.
+// For production with auth, replace with:
+//   allow read, write: if request.auth != null && request.auth.uid == "YOUR_UID";
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /transactions/{docId} {
+      // ── Development: open access ──────────────────────────
+      allow read, write: if true;
+
+      // ── Production (uncomment when Firebase Auth is added) ─
+      // allow read, write: if request.auth != null;
+    }
+
+  }
+}
