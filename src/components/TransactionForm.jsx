@@ -60,28 +60,30 @@ export default function TransactionForm({ onAdd, onClose }) {
   return (
     // ── Backdrop ──────────────────────────────────────────────
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-md p-4 animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       {/* ── Modal panel ────────────────────────────────────── */}
-      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="w-full max-w-md rounded-[32px] bg-slate-900/90 border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">New Transaction</h2>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+          <h2 className="text-base font-extrabold text-white tracking-tight">New Transaction</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 text-slate-400 hover:text-white transition-colors"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
         {/* Form body */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
           
           {/* Type toggle */}
-          <div className="flex rounded-xl bg-gray-100 dark:bg-gray-800 p-1 gap-1">
+          <div className="flex rounded-xl bg-white/[0.03] border border-white/5 p-1 gap-1">
             {["debit", "credit"].map((t) => (
               <button
                 key={t}
@@ -90,26 +92,26 @@ export default function TransactionForm({ onAdd, onClose }) {
                   ...p, type: t,
                   category: CATEGORIES.find((c) => c.type === t)?.label || ""
                 }))}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${
+                className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
                   form.type === t
                     ? t === "credit"
-                      ? "bg-emerald-500 text-white shadow"
-                      : "bg-rose-500 text-white shadow"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                      ? "bg-emerald-500 text-white shadow shadow-emerald-500/10"
+                      : "bg-rose-500 text-white shadow shadow-rose-500/10"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                {t === "credit" ? "💰 Income" : "💸 Expense"}
+                {t === "credit" ? "Income" : "Expense"}
               </button>
             ))}
           </div>
 
           {/* Amount */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-              Amount (₹)
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Amount (INR)
             </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₹</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">₹</span>
               <input
                 type="number"
                 name="amount"
@@ -119,24 +121,24 @@ export default function TransactionForm({ onAdd, onClose }) {
                 min="0.01"
                 step="0.01"
                 required
-                className="w-full pl-8 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/[0.03] border border-white/5 text-white placeholder-slate-500 text-base font-extrabold focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition"
               />
             </div>
           </div>
 
           {/* Category */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Category
             </label>
             <select
               name="category"
               value={form.category}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/5 text-white focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition text-sm font-semibold [&>option]:bg-slate-900"
             >
               {filteredCategories.map((c) => (
-                <option key={c.label} value={c.label}>
+                <option key={c.label} value={c.label} className="bg-slate-900 text-white">
                   {c.icon} {c.label}
                 </option>
               ))}
@@ -144,8 +146,8 @@ export default function TransactionForm({ onAdd, onClose }) {
           </div>
 
           {/* Date */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Date
             </label>
             <input
@@ -154,14 +156,14 @@ export default function TransactionForm({ onAdd, onClose }) {
               value={form.date}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/5 text-white focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition text-sm"
             />
           </div>
 
           {/* Note */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-              Note <span className="normal-case font-normal">(optional)</span>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Note <span className="normal-case font-normal text-slate-500">(optional)</span>
             </label>
             <input
               type="text"
@@ -170,13 +172,13 @@ export default function TransactionForm({ onAdd, onClose }) {
               onChange={handleChange}
               placeholder="e.g. Monthly rent, Zomato order…"
               maxLength={120}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition text-sm font-semibold"
             />
           </div>
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-3 py-2 rounded-lg">
+            <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5 rounded-xl font-medium">
               ⚠ {error}
             </p>
           )}
@@ -185,13 +187,13 @@ export default function TransactionForm({ onAdd, onClose }) {
           <button
             type="submit"
             disabled={submitting}
-            className={`w-full py-3.5 rounded-xl font-bold text-white transition-all text-sm tracking-wide ${
+            className={`w-full py-3.5 rounded-xl font-bold text-white transition-all text-xs uppercase tracking-wider border border-white/10 ${
               form.type === "credit"
-                ? "bg-emerald-500 hover:bg-emerald-600"
-                : "bg-rose-500 hover:bg-rose-600"
-            } disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-[0.98]`}
+                ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-emerald-500/10"
+                : "bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 shadow-rose-500/10"
+            } disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-[0.98]`}
           >
-            {submitting ? "Saving…" : `Save ${form.type === "credit" ? "Income" : "Expense"}`}
+            {submitting ? "Saving log…" : `Save ${form.type === "credit" ? "Income" : "Expense"}`}
           </button>
         </form>
       </div>

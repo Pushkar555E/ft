@@ -1,15 +1,14 @@
 // src/hooks/useTransactions.js
 // ─────────────────────────────────────────────────────────────
 // Real-time Firestore listener hook using onSnapshot.
-// Any write from ANY client (web or Android) instantly
-// propagates to all connected listeners — no polling needed.
+// Scoped per-user to prevent data leakage and sorted in-memory.
 // ─────────────────────────────────────────────────────────────
 
 import { useState, useEffect } from "react";
 import {
   collection,
   query,
-  orderBy,
+  where,
   onSnapshot,
   addDoc,
   deleteDoc,
@@ -20,48 +19,80 @@ import { db } from "../config/firebase";
 
 const COLLECTION = "transactions";
 
-export function useTransactions() {
+export function useTransactions(userId) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // ── Real-time listener ──────────────────────────────────────
   useEffect(() => {
+    if (!userId) {
+      setTransactions([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    // Query transactions belonging only to the authenticated user
     const q = query(
       collection(db, COLLECTION),
-      orderBy("date", "desc")
+      where("userId", "==", userId)
     );
 
-    // onSnapshot fires immediately with current data,
-    // then again on every Firestore write — true real-time sync.
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-          // Firestore Timestamps → JS Date for consistent usage
-          date: docSnap.data().date?.toDate?.() ?? new Date(docSnap.data().date),
-        }));
-        setTransactions(data);
-        setLoading(false);
+        try {
+          const data = snapshot.docs.map((docSnap) => {
+            const docData = docSnap.data();
+            let dateVal;
+            if (docData.date) {
+              if (typeof docData.date.toDate === "function") {
+                dateVal = docData.date.toDate();
+              } else {
+                dateVal = new Date(docData.date);
+              }
+            } else {
+              dateVal = new Date();
+            }
+            return {
+              id: docSnap.id,
+              ...docData,
+              date: dateVal,
+            };
+          });
+
+          // Sort in-memory: descending order (latest first)
+          data.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+          setTransactions(data);
+          setLoading(false);
+        } catch (err) {
+          console.error("Firestore parsing error:", err);
+          setError("Error parsing transactions data: " + err.message);
+          setLoading(false);
+        }
       },
       (err) => {
-        console.error("Firestore error:", err);
-        setError(err.message);
+        console.error("Firestore snapshot error:", err);
+        setError("Database read failed: " + err.message);
         setLoading(false);
       }
     );
 
-    // Cleanup: unsubscribe when component unmounts
+    // Cleanup: unsubscribe when component unmounts or userId changes
     return () => unsubscribe();
-  }, []);
+  }, [userId]);
 
   // ── Add transaction ─────────────────────────────────────────
   const addTransaction = async (txData) => {
+    if (!userId) throw new Error("Unauthenticated write attempt.");
     try {
       await addDoc(collection(db, COLLECTION), {
         ...txData,
+        userId,
         amount: parseFloat(txData.amount),
         createdAt: serverTimestamp(),
       });
