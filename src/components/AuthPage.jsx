@@ -38,6 +38,8 @@ export default function AuthPage() {
         setError("Invalid email or password.");
       } else if (err.code === "auth/invalid-email") {
         setError("Please enter a valid email address.");
+      } else if (err.code === "auth/configuration-not-found") {
+        setError("Email/Password Sign-in is not enabled. Go to your Firebase Console -> Authentication -> Sign-in method, enable 'Email/Password', and click save.");
       } else {
         setError("Authentication failed: " + err.message.replace("Firebase: ", ""));
       }
